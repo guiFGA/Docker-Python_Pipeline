@@ -201,7 +201,7 @@ jobs:
           curl -f http://localhost:8000/api/health
 
           # Test task creation
-          TASK_ID=$(curl -s -X POST http://localhost:8000/api/tasks) \
+          TASK_ID=$(curl -s -X POST http://localhost:8000/api/tasks \
             -H "Content-Type: application/json" \
             -d '{"title":"Integration Test Task","priority":"high"}' | \
             python -c "import sys, json: print(json.load(sys.stdin)['id'])")
