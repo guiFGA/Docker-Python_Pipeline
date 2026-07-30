@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 app = FastAPI(
     title="DevOps Automation - Task Manager API",
-    description="Uma API moderna para gerenciamento de tarefas em laboratórios DevOps",
+    description="A modern API for task management",
     version="1.0.0",
 )
 
