@@ -86,7 +86,7 @@ jobs:
         
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.11'
-        uses: codeco/codecov-actionv@v4
+        uses: codecov/codecov-actionv@v4
         with:
           file: ./coverage.xml
           flags: unittests
@@ -113,13 +113,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Safety (Dependency Vulnerability Check)
-        run: safety Check
+        run: safety check
 
       - name: Run Bandit (Security Linting)
         run: bandit -r . -f json -o bandit-report-json || true
 
       - name: Upload Bandit Report 
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4s
         if: always()
         with:
           name: bandit-report
