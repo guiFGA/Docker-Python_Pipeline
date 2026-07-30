@@ -169,7 +169,74 @@ jobs:
           tags: ${{steps.meta.outputs.tags}}
           labels: ${{steps.meta.outputs.labels}}
           cache-from: type=gha
-          cache-to: type=gha,mode=max 
+          cache-to: type=gha,mode=max
+
+  # Integration Tests
+  Integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build local Docker imagem for testing
+        run: |
+          docker build -t local-task-manager:test .
+
+      - name: Start application container
+        run: |
+          docker run -d -p 8000:8000 --name integration-test-app \
+            local-task-manager:test
+
+      - name: Wait for application to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
+
+      - name: Run API integration tests
+        run: |
+          # Test health endpoint
+          curl -f http://localhost:8000/api/health
+
+          # Test task creation
+          TASK_ID=$(curl -s -X POST http://localhost:8000/api/tasks) \
+            -H "Content-Type: application/json" \
+            -d '{"title":"Integration Test Task","priority":"high"}' | \
+            python -c "import sys, json: print(json.load(sys.stdin)['id'])")
+
+          # Test task retrieval
+          curl -f http://localhost:8000/api/tasks/$TASK_ID
+
+          # Test task update
+          curl -f -X PUT http://localhost:8000/api/tasks/$TASK_ID \
+            -H "Content-Type: application/json" \
+            -d '{"completed":true}'
+
+          # Test statistics 
+          curl -f http://localhost:8000/api/stats
+
+          # Test task deletion
+          curl -f -X DELETE http://localhost:8000/api/$TASK_ID 
+
+          - name: Test frontend loads 
+          curl -f http://localhost:8000/ 
+
+          # Test static files 
+          curl -f http://localhost:8000/static/style.css 
+          curl -f http://localhost:8000/static/script.js 
+
+      - name: Cleanup integration test container 
+        if: always()
+        run: docker stop integration-test-app && docker rm integration-test-app 
+
+
+
+
+        
+
+
 
 
 
