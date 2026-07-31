@@ -204,7 +204,7 @@ jobs:
           TASK_ID=$(curl -s -X POST http://localhost:8000/api/tasks \
             -H "Content-Type: application/json" \
             -d '{"title":"Integration Test Task","priority":"high"}' | \
-            python -c "import sys, json: print(json.load(sys.stdin)['id'])")
+            python -c "import sys, json; print(json.load(sys.stdin)['id'])")
 
           # Test task retrieval
           curl -f http://localhost:8000/api/tasks/$TASK_ID
@@ -272,7 +272,7 @@ jobs:
             --run-time 2m \
             --headless \
             --only-summary \
-            
+
       - name: Cleanup
         if: always()
         run: docker stop perf-test-app && docker rm perf-test-app
