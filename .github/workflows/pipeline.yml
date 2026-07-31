@@ -281,6 +281,22 @@ jobs:
         if: always()
         run: docker stop perf-test-app && docker rm perf-test-app
 
+  #Deploy to staging
+  deploy-staging:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    needs: [integration-test, perfomance-test]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://task-manager-staging.example.com
+
+    steps:
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          echo "Image: ${{needs.build.outputs.image-tag}}"
+          # Add staging deployment logic here 
 
   # Deploy to production
   deploy-production:
