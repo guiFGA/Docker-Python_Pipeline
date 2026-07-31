@@ -220,12 +220,16 @@ jobs:
           # Test task deletion
           curl -f -X DELETE http://localhost:8000/api/tasks/$TASK_ID 
 
-          - name: Test frontend loads 
-          curl -f http://localhost:8000/ 
+      
 
-          # Test static files 
-          curl -f http://localhost:8000/static/style.css 
-          curl -f http://localhost:8000/static/script.js 
+          - name: Test frontend accessibility
+            run: |
+              # Test that frontend loads 
+              curl -f http://localhost:8000/ 
+
+              # Test static files 
+              curl -f http://localhost:8000/static/style.css 
+              curl -f http://localhost:8000/static/script.js 
 
       - name: Cleanup integration test container 
         if: always()
