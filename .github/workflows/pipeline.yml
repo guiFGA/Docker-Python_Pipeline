@@ -231,6 +231,55 @@ jobs:
         if: always()
         run: docker stop integration-test-app && docker rm integration-test-app 
 
+  # Perfomance Tests
+  perfomance-test:
+    name: Perfomance Tests
+    runs-on: ubuntu-latest
+    needs: integration-test 
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+      
+      - name: Install dependencies
+        run: |
+          pip install locust
+        
+      - name: Build local Docker image for testing
+        run: |
+          docker build -t local-task-manager:test .
+
+      - name: Run perfomance tests
+        run: |
+          # Start the application in background
+          docker run -d -p 8000:8000 --name perf-test-app \
+            local-task-manager:test
+          
+          # Wait for app to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health' do sleep 2; done'
+
+          # Run basic load test
+          locust -f .github/workflows/locustfile.py \
+            --host http://localhost:8000 \
+            --users 50 \
+            --spawn-rate 5 \
+            --run-time 2m \
+            --headless \
+            --only-summary \
+            
+      - name: Cleanup
+        if: always()
+        run: docker stop perf-test-app && docker rm perf-test-app
+
+
+
+
 
 
 
